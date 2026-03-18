@@ -1,0 +1,12 @@
+{
+  "name": "seguranca",
+  "version": "1.0.0",
+  "description": "Aplicação web completa para **criação e verificação de assinaturas digitais** usando RSA-2048 + SHA-256.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
