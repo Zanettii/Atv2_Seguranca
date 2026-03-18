@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  backend:
+    build: ./backend
+    container_name: sig-backend
+    ports:
+      - "3001:3001"
+    environment:
+      PORT: 3001
+      DB_PATH: /app/data/signatures.db
+      JWT_SECRET: change-me-in-production-jwt-secret
+      SERVER_SECRET: change-me-in-production-server-secret-32b
+      FRONTEND_URL: http://localhost:5173
+    volumes:
+      - sig-data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: sig-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  sig-data:
