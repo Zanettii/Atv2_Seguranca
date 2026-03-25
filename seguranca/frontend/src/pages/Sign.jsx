@@ -10,9 +10,10 @@ export default function Sign() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState([]);
+  const [copied, setCopied] = useState('');
 
   useEffect(() => {
-    api.getSignatures(token).then((d) => setHistory(d.signatures)).catch(() => {});
+    api.getSignatures(token).then((d) => setHistory(d.signatures)).catch(() => { });
   }, [token]);
 
   async function onSign(e) {
@@ -34,6 +35,7 @@ export default function Sign() {
         },
         ...h,
       ]);
+      setText('');
     } catch (err) {
       setError(err.message);
     } finally {
@@ -41,90 +43,110 @@ export default function Sign() {
     }
   }
 
-  function copyToClipboard(value) {
+  function copyToClipboard(value, key) {
     navigator.clipboard.writeText(value);
+    setCopied(key);
+    setTimeout(() => setCopied(''), 2000);
   }
 
   return (
-    <div>
+    <div className="container">
       <h1>Assinar Texto</h1>
       <p className="subtitle">
-        Digite um texto abaixo. O sistema calculará o hash SHA-256, assinará com sua chave privada
-        RSA-2048 e armazenará a assinatura.
+        Digite um texto abaixo. O sistema calculara o hash SHA-256, assinara com sua chave privada
+        RSA-2048 e armazenara a assinatura.
       </p>
 
-      <form onSubmit={onSign} className="card">
-        <label>
-          Texto a assinar
-          <textarea
-            rows={6}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder="Digite aqui o texto que deseja assinar…"
-            required
-          />
-        </label>
-        {error && <div className="alert alert-error">{error}</div>}
-        <button type="submit" className="btn btn-primary" disabled={loading || !text.trim()}>
-          {loading ? 'Assinando…' : '🔏 Assinar'}
-        </button>
-      </form>
+      <div className="card">
+        <h2>Novo documento</h2>
+        <form onSubmit={onSign}>
+          <div className="form-group">
+            <label className="form-label">Texto a assinar</label>
+            <textarea
+              className="form-textarea"
+              rows={6}
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Digite aqui o texto que deseja assinar..."
+              required
+            />
+          </div>
+          {error && <div className="alert alert-error">{error}</div>}
+          <button type="submit" className="btn btn-primary" disabled={loading || !text.trim()}>
+            {loading ? 'Assinando...' : 'Assinar Documento'}
+          </button>
+        </form>
+      </div>
 
       {result && (
-        <div className="card result-card success">
-          <h2>✅ Assinatura gerada!</h2>
-          <div className="result-row">
-            <span className="label">ID da Assinatura</span>
-            <span className="value mono">{result.id}</span>
-            <button className="btn btn-sm btn-outline" onClick={() => copyToClipboard(result.id)}>
-              Copiar
+        <div className="card">
+          <div className="result-header valid">
+            Assinatura gerada com sucesso
+          </div>
+          <div className="result-body">
+            <div className="result-row">
+              <span className="result-label">ID da Assinatura</span>
+              <span className="result-value mono">{result.id}</span>
+            </div>
+            <div className="result-row">
+              <span className="result-label">Algoritmo</span>
+              <span className="result-value">{result.algorithm}</span>
+            </div>
+            <div className="result-row">
+              <span className="result-label">Hash SHA-256</span>
+              <span className="result-value mono">{result.textHash}</span>
+            </div>
+            <div className="result-row">
+              <span className="result-label">Assinatura</span>
+              <span className="result-value mono small">{result.signature.slice(0, 60)}...</span>
+            </div>
+          </div>
+          <div style={{ padding: '1rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <button 
+              type="button"
+              className="btn btn-sm btn-secondary" 
+              onClick={() => copyToClipboard(result.id, 'id')}
+            >
+              {copied === 'id' ? 'Copiado!' : 'Copiar ID'}
             </button>
+            <Link to={`/verify/${result.id}`} className="btn btn-sm btn-primary">
+              Verificar Assinatura
+            </Link>
           </div>
-          <div className="result-row">
-            <span className="label">Algoritmo</span>
-            <span className="value">{result.algorithm}</span>
-          </div>
-          <div className="result-row">
-            <span className="label">Hash SHA-256</span>
-            <span className="value mono break-all">{result.textHash}</span>
-          </div>
-          <div className="result-row">
-            <span className="label">Assinatura (base64)</span>
-            <span className="value mono break-all small">{result.signature.slice(0, 80)}…</span>
-          </div>
-          <Link to={`/verify/${result.id}`} className="btn btn-outline mt-1">
-            🔍 Verificar esta assinatura
-          </Link>
         </div>
       )}
 
       {history.length > 0 && (
-        <div className="card mt-2">
-          <h2>Histórico de Assinaturas</h2>
-          <table className="sig-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Texto</th>
-                <th>ID</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.map((s) => (
-                <tr key={s.id}>
-                  <td className="nowrap">{new Date(s.created_at).toLocaleString('pt-BR')}</td>
-                  <td className="truncate">{s.text_content}</td>
-                  <td className="mono small">{s.id.slice(0, 8)}…</td>
-                  <td>
-                    <Link to={`/verify/${s.id}`} className="btn btn-sm btn-outline">
-                      Verificar
-                    </Link>
-                  </td>
+        <div className="card">
+          <h2>Historico de Assinaturas</h2>
+          <div className="table-container">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Texto</th>
+                  <th>ID</th>
+                  <th>Acao</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {history.map((s) => (
+                  <tr key={s.id}>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      {new Date(s.created_at).toLocaleString('pt-BR')}
+                    </td>
+                    <td className="truncate">{s.text_content}</td>
+                    <td className="mono small">{s.id.slice(0, 8)}...</td>
+                    <td>
+                      <Link to={`/verify/${s.id}`} className="btn btn-sm btn-secondary">
+                        Verificar
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

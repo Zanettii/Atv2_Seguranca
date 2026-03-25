@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api } from '../services/api.js';
-import { useAuth } from '../context/AuthContext.jsx';
 
 export default function Register() {
   const [form, setForm] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
   const navigate = useNavigate();
 
   function onChange(e) {
@@ -17,11 +16,14 @@ export default function Register() {
   async function onSubmit(e) {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setLoading(true);
     try {
-      const data = await api.register(form);
-      login(data.token, data.user);
-      navigate('/sign');
+      await api.register(form);
+      setSuccess('Conta criada com sucesso! Redirecionando para login...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -56,8 +58,9 @@ export default function Register() {
           />
         </label>
         {error && <div className="alert alert-error">{error}</div>}
-        <button type="submit" className="btn btn-primary w-full" disabled={loading}>
-          {loading ? 'Gerando chaves…' : 'Cadastrar'}
+        {success && <div className="alert alert-success">{success}</div>}
+        <button type="submit" className="btn btn-primary w-full" disabled={loading || success}>
+          {loading ? 'Gerando chaves...' : 'Cadastrar'}
         </button>
       </form>
       <p className="text-center mt-1">

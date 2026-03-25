@@ -41,6 +41,8 @@ router.get('/:id', (req, res) => {
     algorithm: sig.algorithm,
     textHash: sig.text_hash,
     createdAt: sig.created_at,
+    publicKey: sig.public_key,
+    signatureBase64: sig.signature,
     ...(result === 'VALID' && { textContent: sig.text_content }),
   });
 });

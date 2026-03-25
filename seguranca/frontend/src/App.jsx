@@ -4,6 +4,7 @@ import Register from './pages/Register.jsx';
 import Login from './pages/Login.jsx';
 import Sign from './pages/Sign.jsx';
 import Verify from './pages/Verify.jsx';
+import Keys from './pages/Keys.jsx';
 import { useAuth } from './context/AuthContext.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 
@@ -31,6 +32,14 @@ function AppRoutes() {
           />
           <Route path="/verify" element={<Verify />} />
           <Route path="/verify/:id" element={<Verify />} />
+          <Route
+            path="/keys"
+            element={
+              <ProtectedRoute>
+                <Keys />
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </main>
     </>
